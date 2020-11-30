@@ -231,22 +231,26 @@ int customers(int *coaches, int *waiting_room, int *first, int *allocationTable)
 int deadlockDetection(int process, int temp, int resource, int *allocationTable){
     
     srand(time(0));
-    char* typeWeight[] = {"2.5", "5", "10", "25", "35", "45"};
+    char* typeWeight[] = {"2.5", "5", "7.5", "10", "12.5", "15"};
     int amountWeight[6];
-
     for (int i = 0; i<6; i++){
         // setting the the amount of weights in the facility to 10 of each weight type
-        allocT_change(1,2,(rand() % 10),allocationTable);
-        printf( "The Customer is using %d of %s lb weights. \n", amountWeight[i], typeWeight[i]);
-    }
-   
+        //This will change each value in the column to a value of of 1-10 for the weights after the amount and different types
+        int rowChange = i + 2; 
+        rowChange <= 6;
+        allocT_change(i,rowChange,(rand() % 10),allocationTable);
+        allocT_change(i,0,(2.5+(i * 2.5)),allocationTable);
+        allocT_change(i,1,10,allocationTable);
+        // printf( "The Customer is using %d of %s lb weights. \n", amountWeight[i], typeWeight[i]);
+    }   
+
+
     int b = 0;
     int count = 0, m, n;
-    int allocation_table[5] = {0, 0, 0, 0, 0};
     //The available is the plates not being used
     //The Current is the plates being used
-    //The Maximum claim is the maximum plates that can be used
-    int available[5], current[5][5], maximum_claim[5][5];
+    //The Maximum claim is the maximum plates that can be used **NEED TO CHANGE THIS TO READ FROM THE 2ND COLLUMN
+    int available[5], current[7][5], maximum_claim[7][5]; // Need to 
     int maximum_resources[5], running[5], safe_state = 0;
 
     process = customers; //Don't know how to implement this part
@@ -295,15 +299,15 @@ int deadlockDetection(int process, int temp, int resource, int *allocationTable)
     }
     for(m = 0; m < process; m++) {
         for(n = 0; n < resource; n++) {
-                allocation_table[n] = allocation_table[n] + current[m][n];
+                allocationTable[n] = allocationTable[n] + current[m][n];
         }
     }
     printf("\nAllocated Resources ");
     for(m = 0; m < resource; m++) {
-        printf("\t%d", allocation_table[m]);
+        printf("\t%d", allocationTable[m]);
     }
     for(m = 0; m < resource; m++) {
-        available[m] = maximum_resources[m] - allocation_table[m];
+        available[m] = maximum_resources[m] - allocationTable[m];
     }
     printf("\nAvailable Resources:");
     for(m = 0; m < resource; m++) {
