@@ -250,125 +250,106 @@ int customers(int *coaches, int *waiting_room, int *first, int *allocationTable)
  */
 
 int deadlockDetection(int process, int temp, int resource, int *allocationTable){
-    
-    srand(time(0));
-    char* typeWeight[] = {"2.5", "5", "7.5", "10", "12.5", "15"};
-    int amountWeight[6];
+    // This is old code, but will leave in incase I need to use it
+    // srand(time(0));
+    // char* typeWeight[] = {"2.5", "5", "7.5", "10", "12.5", "15"};  This is old code, but will leave in incase I need to use it
+    // int amountWeight[6];
     for (int i = 0; i<6; i++){
         // setting the the amount of weights in the facility to 10 of each weight type
         //This will change each value in the column to a value of of 1-10 for the weights after the amount and different types
         int rowChange = i + 2; 
         rowChange <= 6;
-        allocT_change(i,rowChange,(rand() % 10),allocationTable);
-        allocT_change(i,0,(2.5+(i * 2.5)),allocationTable);
-        allocT_change(i,1,10,allocationTable);
-        // printf( "The Customer is using %d of %s lb weights. \n", amountWeight[i], typeWeight[i]);
+        allocT_change(i,rowChange,(rand() % 10),allocationTable); // This adds how many of each weight the Customer is trying to use
+        allocT_change(i,0,(2.5+(i * 2.5)),allocationTable); // This adds the types of weights to the first row column
+        allocT_change(i,1,10,allocationTable);  // This sets the amount of each weight available in the second row column
+        // printf( "The Customer is using %d of %s lb weights. \n", amountWeight[i], typeWeight[i]);  old code
     }   
 
 
     int b = 0;
-    int count = 0, m, n;
+    int count = 0, i, j;
     //The available is the plates not being used
     //The Current is the plates being used
     //The Maximum claim is the maximum plates that can be used **NEED TO CHANGE THIS TO READ FROM THE 2ND COLLUMN
-    int available[5], current[7][5], maximum_claim[1][2]; // Need to 
+    int available[j], current[j][i], maximum_claim[1][5]; // Need to 
     int maximum_resources[5], running[5], safe_state = 0;
 
-    process = customers; //Don't know how to implement this part
+    for(int col = 0; col < 6; col++){
+        for(int row; 1 < row < 8; row++){
+            process = allocT_access(col,row,allocationTable);
+        }
+    }
+    // process = allocT_access(); //Don't know how to implement this part
 
-    for(m = 0; m < process; m++) {
-        running[m] = 1;
+    for(j = 0; j < process; j++) {
+        running[j] = 1;
         count++;
     }
 
-    resource = amountWeight;
+    current[2][5] = allocT_access(0-5,2-4,allocationTable);  // This is the weights currently being used by the Customers
+    available[5] = allocT_access(0-5,1,allocationTable);      
 
-    for(m = 0; m < resource; m++) { 
-        scanf("%d", &maximum_resources[m]);
+    resource = allocationTable;
+
+    for(j = 0; j < resource; j++) { 
+        scanf("%d", &maximum_resources[j]);
     }
 
-    for(m = 0; m < process; m++) {
-        for(n = 0; n < resource; n++) 
+    for(j = 0; j < process; j++) {
+        for(i = 0; i < resource; i++) 
         {
-                scanf("%d", &current[m][n]);
+                scanf("%d", &current[j][i]);
         }
     }
-    // printf("\nEnter The Maximum Claim Table:");
-    for(m = 0; m < process; m++) {
-        for(n = 0; n < resource; n++) 
+    // Creating the maximum claim 
+    for(j = 0; j < process; j++) {
+        for(i = 0; i < resource; i++) 
         {
-                maximum_claim[m][n] = allocationTable;
+                maximum_claim[j][i] = allocT_access(i,1,allocationTable);
         }
     }
 
-    printf("\nThe Claim Vector ");
-    for(m = 0; m < resource; m++) {
-        printf("\t%d ", maximum_resources[m]);
-    }
-    printf("\n The Allocated Resource Table ");
-    for(m = 0; m < process; m++) {
-        for(n = 0; n < resource; n++) {
-                printf("\t%d", current[m][n]);
-        }
-        printf("\n");
-    }
-    printf("\nThe Maximum Claim Table ");
-    for(m = 0; m < process; m++) {
-        for(n = 0; n < resource; n++) {
-                printf("\t%d", maximum_claim[m][n]);
-        }
-        printf("\n");
-    }
-    for(m = 0; m < process; m++) {
-        for(n = 0; n < resource; n++) {
-                allocationTable[n] = allocationTable[n] + current[m][n];
+    for(j = 0; j < process; j++) {
+        for(i = 0; i < resource; i++) {
+                allocationTable[i] = allocationTable[i] + current[j][i];
         }
     }
-    printf("\nAllocated Resources ");
-    for(m = 0; m < resource; m++) {
-        printf("\t%d", allocationTable[m]);
+
+    for(j = 0; j< resource; j++) {
+        available[j] = maximum_resources[j] - allocationTable[j];
     }
-    for(m = 0; m < resource; m++) {
-        available[m] = maximum_resources[m] - allocationTable[m];
-    }
-    printf("\nAvailable Resources:");
-    for(m = 0; m < resource; m++) {
-        printf("\t%d", available[m]);
-    }
-    printf("\n");
+
     while(count != 0) {
         safe_state = 0;
-        for(m = 0; m < process; m++) {
-                if(running[m]) {
+        for(j = 0; j < process; j++) {
+                if(running[j]) {
                     temp = 1;
-                    for(n = 0; n < resource; n++) {
-                            if(maximum_claim[m][n] - current[m][n] > available[n]) {
+                    for(i = 0; i < resource; i++) {
+                            if(maximum_claim[j][i] - current[j][i] > available[i]) {
                                 temp = 0;
                                 break;
                             }
                     }
                     if(temp) {
-                            printf("\nProcess %d Is In Execution \n", m + 1);
-                            running[m] = 0;
+                            running[j] = 0;
                             count--;
                             safe_state = 1;
-                            for(n = 0; n < resource; n++) {
-                                    available[n] = available[n] + current[m][n];
+                            for(i = 0; i < resource; i++) {
+                                    available[i] = available[i] + current[j][i];
                             }
                             break;
                     }
                 }
         }
         if(!safe_state) {
-                printf("\nThe Processes Are In An Unsafe State \n");
+                printf("\nThe processes are experiencing deadlock \n");
                 break;
         } 
         else {
-                printf("\nThe Process Is In A Safe State \n");
-                printf("\nAvailable Vector\n");
-                for(m = 0; m < resource; m++) 
+                printf("\nThe processes are running correctly \n");
+                for(j = 0; j < resource; j++) 
                 {
-                    printf("\t%d", available[m]);
+                    printf("\t%d", allocT_access(j,1,allocationTable));
                 }
                 printf("\n");
         }
@@ -530,7 +511,7 @@ int main(){
 
     for(int i = 0; i < 8; i++){
         for(int j = 0; j < 6; j++){
-            printf(" %d ",allocT_access(i,j,allocationTable));
+            printf("Allocation Table \n %d ",allocT_access(i,j,allocationTable));
         }
         printf("\n");
     }
