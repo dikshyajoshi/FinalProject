@@ -13,12 +13,15 @@
 #define WAITING_ROOM "/wroom"
 #define COACHES "/trainers"
 #define FIRST "/pointer"
+#define ALLOC "/allocation"
 #define MAX_SIZE sizeof(int) * 8
 
 int w;
 int c;
 int p;
+int a;
 
+int a_size;
 int c_size;
 int w_size;
 // int sets;
@@ -109,7 +112,7 @@ int first_cus(int *array, int *first, int size){
 //             return 0;
 //       }
 // }
-int customers(int *coaches, int *waiting_room, int *first){
+int customers(int *coaches, int *waiting_room, int *first, int *allocationTable){
 
     int tmp = 0;
 
@@ -210,7 +213,7 @@ int customers(int *coaches, int *waiting_room, int *first){
  *  @return the index of the first avalible customer, -1 if the waiting room is empty
  */
 
-int deadlockDetection(int process, int temp, int resource){
+int deadlockDetection(int process, int temp, int resource, int *allocationTable){
     
     srand(time(0));
     char* typeWeight[] = {"2.5", "5", "10", "25", "35", "45"};
@@ -365,6 +368,14 @@ int ini_ipc(int wroom_size, int trainer_size){
     p = shm_open(FIRST,O_CREAT | O_RDWR, 0666);
 
 
+    a = shm_open(ALLOC, O_CREAT | O_RDWR, 0666);
+    ftruncate(a,sizeof(int) * 8 * 6);
+
+    int *allocationTable = (int*) mmap(0,sizeof(int) * 8 * 6, PROT_READ | PROT_WRITE, MAP_SHARED, a, 0);
+    for(int i = 0; i < 6*8; i++){
+        allocationTable[i] = 0;
+    }
+
 
     ftruncate(p,sizeof(int));
     int *first = (int*) mmap(0,sizeof(int), PROT_READ | PROT_WRITE, MAP_SHARED, p, 0);
@@ -373,6 +384,13 @@ int ini_ipc(int wroom_size, int trainer_size){
     return 0;
 }
 
+/**
+ * 
+ */
+int allocT_access(int col, int row, int* arr){
+    int final = col * 6 + row;
+    return arr[final];
+}
 
 
 
@@ -386,6 +404,9 @@ int main(){
     int *waiting_room;
     w_size = 6;
 
+    int *allocationTable;
+    a_size = c_size;
+
     coaches = malloc(sizeof(int) * MAX_SIZE);
     waiting_room = malloc(sizeof(int) * MAX_SIZE);
 
@@ -394,6 +415,16 @@ int main(){
     //first initialization of the shared memory space
     ini_ipc(8,8);
 
+    int b = fork();
+
+    if(b == 0){
+
+        int act = shm_open(ALLOC, O_RDWR, 0666);
+        allocationTable = (int*) mmap(0,sizeof(int) * 8 * 6, PROT_READ | PROT_WRITE, MAP_SHARED, act, 0);
+
+
+        deadlockDetection();
+    }
 
     //loop that creates custromers, for testing purposes we are just going to create 3 for now
     for(int i = 0; i < 18; i++){
@@ -416,7 +447,10 @@ int main(){
             int fir = shm_open(FIRST, O_RDWR, 0666);
             first = (int*) mmap(0,sizeof(int), PROT_READ | PROT_WRITE, MAP_SHARED, fir, 0);
 
-            customers(coaches,waiting_room, first);
+            int act = shm_open(ALLOC, O_RDWR, 0666);
+            allocationTable = (int*) mmap(0,sizeof(int) * 8 * 6, PROT_READ | PROT_WRITE, MAP_SHARED, act, 0);
+
+            customers(coaches,waiting_room, first, allocationTable);
 
             exit(0);
 
@@ -438,6 +472,9 @@ int main(){
     int fir = shm_open(FIRST, O_RDWR, 0666);
     first = (int*) mmap(0,sizeof(int), PROT_READ | PROT_WRITE, MAP_SHARED, fir, 0);
 
+    int act = shm_open(ALLOC, O_RDWR, 0666);
+    allocationTable = (int*) mmap(0,sizeof(int) * 8 * 6, PROT_READ | PROT_WRITE, MAP_SHARED, act, 0);
+
     int status = 0;
 
     //wait for all child proc to end
@@ -456,6 +493,15 @@ int main(){
 
     }
 
+    printf("\n\n");
+
+    for(int i = 0; i < 8; i++){
+        for(int j = 0; j < 6; j++){
+            printf(" %d ",allocT_access(i,j,allocationTable));
+        }
+        printf("\n");
+    }
+
     printf("\n");
 
     printf("First: %d\n",*first);
@@ -463,8 +509,10 @@ int main(){
     close(c);
     close(w);
     close(p);
+    close(a);
     shm_unlink(FIRST);
     shm_unlink(COACHES);
     shm_unlink(WAITING_ROOM);
+    shm_unlink(ALLOC);
 
 }
