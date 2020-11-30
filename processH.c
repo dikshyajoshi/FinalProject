@@ -133,6 +133,7 @@ int customers(int *coaches, int *waiting_room, int *first){
 
         //getting the trainer and releasing it to the customer as well as the seat in the waiting room
         trainer = waiting_room[cust_wait] * -1;
+        
         waiting_room[cust_wait] = 0;
     }
 
@@ -147,6 +148,8 @@ int customers(int *coaches, int *waiting_room, int *first){
 
     //train the customer
     sleep(1);
+
+
     //next trainer walks back to the waiting room
     sleep(.05);
 
