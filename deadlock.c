@@ -27,6 +27,21 @@ int w_size;
 // int sets;
 
 
+/**
+ * 
+ */
+int allocT_access(int col, int row, int* arr){
+    int final = col + row * 6;
+    return arr[final];
+}
+
+void allocT_change(int col, int row,int to, int* arr){
+    int final = col + row * 6;
+    arr[final] = to;
+}
+
+
+
 /** The purpose of this function is to check the avalibilty of the trainers or the waiting room
  *  @param array the array to check
  *  @param size the size of the array
@@ -221,7 +236,7 @@ int deadlockDetection(int process, int temp, int resource, int *allocationTable)
 
     for (int i = 0; i<6; i++){
         // setting the the amount of weights in the facility to 10 of each weight type
-        amountWeight[i] = (rand() % 10);
+        allocT_change(1,2,(rand() % 10),allocationTable);
         printf( "The Customer is using %d of %s lb weights. \n", amountWeight[i], typeWeight[i]);
     }
    
@@ -382,14 +397,6 @@ int ini_ipc(int wroom_size, int trainer_size){
     *first = 0;
 
     return 0;
-}
-
-/**
- * 
- */
-int allocT_access(int col, int row, int* arr){
-    int final = col * 6 + row;
-    return arr[final];
 }
 
 
