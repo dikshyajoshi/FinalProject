@@ -186,8 +186,29 @@ int customers(int *coaches, int *waiting_room, int *first, int *allocationTable)
     // printf("The Customer is using this plate: %d \n", customerPlates);
     
 
-    //train the customer
-    sleep(1.5);
+    //train the customer ** the training time for each customer is decided by how many sets
+    if (random = 2){
+        sleep(1);
+    }
+    else if(random = 3){
+        sleep(1.5);
+    }
+    else if(random = 4){
+        sleep(2);
+    }
+    else if(random = 5){
+        sleep(2.5);
+    }
+    else if(random = 6){
+        sleep(3);
+    }
+    else if(random = 7){
+        sleep(3.5);
+    }
+    else
+    {
+        exit(0);
+    }
     //next trainer walks back to the waiting room
     sleep(.05);
 
@@ -250,7 +271,7 @@ int deadlockDetection(int process, int temp, int resource, int *allocationTable)
     //The available is the plates not being used
     //The Current is the plates being used
     //The Maximum claim is the maximum plates that can be used **NEED TO CHANGE THIS TO READ FROM THE 2ND COLLUMN
-    int available[5], current[7][5], maximum_claim[7][5]; // Need to 
+    int available[5], current[7][5], maximum_claim[1][2]; // Need to 
     int maximum_resources[5], running[5], safe_state = 0;
 
     process = customers; //Don't know how to implement this part
@@ -272,13 +293,14 @@ int deadlockDetection(int process, int temp, int resource, int *allocationTable)
                 scanf("%d", &current[m][n]);
         }
     }
-    printf("\nEnter The Maximum Claim Table:");
+    // printf("\nEnter The Maximum Claim Table:");
     for(m = 0; m < process; m++) {
         for(n = 0; n < resource; n++) 
         {
-                scanf("%d", &maximum_claim[m][n]);
+                maximum_claim[m][n] = allocationTable;
         }
     }
+
     printf("\nThe Claim Vector ");
     for(m = 0; m < resource; m++) {
         printf("\t%d ", maximum_resources[m]);
@@ -434,7 +456,7 @@ int main(){
         allocationTable = (int*) mmap(0,sizeof(int) * 8 * 6, PROT_READ | PROT_WRITE, MAP_SHARED, act, 0);
 
 
-        deadlockDetection();
+        // deadlockDetection();
     }
 
     //loop that creates custromers, for testing purposes we are just going to create 3 for now
